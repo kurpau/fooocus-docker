@@ -1,10 +1,10 @@
-# Use the official Nvidia CUDA image as a parent image
+# Dockerfile for Fooocus server using Nvidia CUDA and Python 3.10 on Ubuntu 22.04
 FROM nvidia/cuda:12.2.0-base-ubuntu22.04
 
-# Set environment variables to non-interactive (this prevents some prompts)
+# Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install Python 3.10, and other necessary system packages
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     aria2 \
     libgl1 \
@@ -23,22 +23,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
 WORKDIR /root
 
-# Clone the Fooocus repository into the root's home directory
+# Clone and set up the Fooocus project
 RUN git clone https://github.com/lllyasviel/Fooocus.git && \
     cd Fooocus && \
     python3.10 -m venv fooocus_env && \
     . fooocus_env/bin/activate && \
     pip install -r requirements_versions.txt
 
-# Expose the SSH port
-EXPOSE 22
-
-# Expose the port for Fooocus
-EXPOSE 7865
+# Expose ports for SSH and Fooocus
+EXPOSE 22 7865
 
 COPY --chmod=755 start.sh /start.sh
-
 ENTRYPOINT ["/start.sh"]
